@@ -3,98 +3,795 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Status Creator | Matrubhumi Vandana Trust</title>
+    <title>WhatsApp Status Creator - Matrubhumi Vandana Trust</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="./css/style.css">
-    <link rel="icon" href="./images/favicon.ico">
+    <style>
+        :root {
+            --primary-color: #25D366;
+            --secondary-color: #128C7E;
+            --accent-color: #DCF8C6;
+            --dark-color: #075E54;
+            --light-color: #FFFFFF;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, var(--dark-color), var(--secondary-color));
+            color: var(--light-color);
+            padding: 15px 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+        }
+        
+        .event-selector {
+            position: relative;
+        }
+        
+        .event-dropdown {
+            appearance: none;
+            background-color: var(--light-color);
+            color: #333;
+            border: none;
+            padding: 10px 40px 10px 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 250px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .event-dropdown:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .event-selector::after {
+            content: '\f078';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--dark-color);
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .selection-panel, .preview-panel {
+            background-color: var(--light-color);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .selection-panel:hover, .preview-panel:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .panel-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .panel-title i {
+            margin-right: 10px;
+        }
+        
+        /* Media Selector */
+        .media-selector {
+            margin-bottom: 30px;
+        }
+        
+        .media-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .media-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+        }
+        
+        .media-tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+        
+        .media-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            aspect-ratio: 9/16;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+        
+        .media-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .media-item.selected {
+            border: 2px solid var(--primary-color);
+        }
+        
+        .media-item img, .media-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .media-type-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        /* Audio Selector */
+        .audio-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .audio-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .audio-item:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .audio-item.selected {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .audio-item i {
+            margin-right: 15px;
+            font-size: 20px;
+        }
+        
+        .audio-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .play-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: var(--transition);
+        }
+        
+        .audio-item.selected .play-btn {
+            background-color: white;
+            color: var(--primary-color);
+        }
+        
+        .play-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Preview Panel */
+        .preview-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 9/16;
+            background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .preview-media {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .preview-audio-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .preview-audio-info i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            border: 1px solid #ddd;
+            flex: 1;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, var(--dark-color), var(--secondary-color));
+            color: var(--light-color);
+            padding: 40px 0 20px;
+            margin-top: 50px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 2px;
+            background-color: var(--primary-color);
+        }
+        
+        .footer-section p {
+            margin-bottom: 15px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: var(--transition);
+        }
+        
+        .social-link:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        
+        .contact-link {
+            color: white;
+            text-decoration: none;
+            transition: var(--transition);
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .contact-link:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .slide-up {
+            animation: slideUp 0.4s ease-out;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 576px) {
+            .navbar .container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .event-dropdown {
+                width: 100%;
+            }
+            
+            .panel-title {
+                font-size: 18px;
+            }
+            
+            .btn {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <img src="./images/logo.png" alt="Matrubhumi Vandana Trust">
-                <h1>Event Status Creator</h1>
+                <i class="fas fa-photo-video"></i>
+                <span>Status Creator</span>
             </div>
-            <div class="nav-links">
-                <select id="event-selector" class="event-dropdown">
-                    <option value="" disabled selected>Select Event</option>
+            <div class="event-selector">
+                <select id="eventDropdown" class="event-dropdown">
                     <option value="janta-raja-2025">Janta Raja 2025</option>
                     <option value="bharat-mata-mandir">Bharat Mata Mandir</option>
                 </select>
             </div>
         </div>
     </nav>
-
+    
     <!-- Main Content -->
-    <main class="container">
-        <!-- Media Selection Section -->
-        <section class="media-selection">
-            <h2><i class="fas fa-images"></i> Select Photo/Video</h2>
-            <div class="media-grid" id="media-grid">
-                <!-- Dynamically loaded -->
-            </div>
-        </section>
-
-        <!-- Audio Selection Section -->
-        <section class="audio-selection">
-            <h2><i class="fas fa-music"></i> Select Audio</h2>
-            <div class="audio-list" id="audio-list">
-                <!-- Dynamically loaded -->
-            </div>
-        </section>
-
-        <!-- Preview Section -->
-        <section class="preview-section">
-            <h2><i class="fas fa-eye"></i> Preview</h2>
-            <div class="preview-container">
-                <div class="preview-media" id="preview-media">
-                    <div class="placeholder">
-                        <i class="fas fa-image"></i>
-                        <p>Select media to preview</p>
+    <div class="container">
+        <div class="main-content">
+            <!-- Selection Panel -->
+            <div class="selection-panel slide-up">
+                <!-- Media Selector -->
+                <div class="media-selector">
+                    <h2 class="panel-title"><i class="fas fa-images"></i> Select Media</h2>
+                    <div class="media-tabs">
+                        <div class="media-tab active" data-tab="images">Images</div>
+                        <div class="media-tab" data-tab="videos">Videos</div>
+                    </div>
+                    <div class="media-grid" id="mediaGrid">
+                        <!-- Media items will be loaded here dynamically -->
                     </div>
                 </div>
-                <div class="preview-controls">
-                    <button id="play-btn" class="play-btn">
-                        <i class="fas fa-play"></i> Play Status
+                
+                <!-- Audio Selector -->
+                <div class="audio-selector">
+                    <h2 class="panel-title"><i class="fas fa-music"></i> Select Audio</h2>
+                    <div class="audio-list" id="audioList">
+                        <!-- Audio items will be loaded here dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preview Panel -->
+            <div class="preview-panel slide-up">
+                <h2 class="panel-title"><i class="fas fa-eye"></i> Preview</h2>
+                <div class="preview-container">
+                    <img id="previewMedia" class="preview-media" src="" alt="Status Preview">
+                    <audio id="previewAudio" loop></audio>
+                </div>
+                <div class="preview-audio-info">
+                    <i class="fas fa-music"></i>
+                    <span id="currentAudioName">No audio selected</span>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="resetBtn">
+                        <i class="fas fa-redo"></i> Reset
                     </button>
-                    <button id="download-btn" class="download-btn">
-                        <i class="fas fa-download"></i> Download
-                    </button>
-                    <button id="share-btn" class="share-btn">
-                        <i class="fas fa-share-alt"></i> Share
+                    <button class="btn btn-primary" id="downloadBtn">
+                        <i class="fas fa-download"></i> Download Status
                     </button>
                 </div>
             </div>
-        </section>
-    </main>
-
+        </div>
+    </div>
+    
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-about">
+                <div class="footer-section">
                     <h3>About Us</h3>
                     <p>In Morbi, Gujarat we are making World's biggest Temple of Bharat Mata, under the "Matru Bhumi Vandna Trust".</p>
                 </div>
-                <div class="footer-contact">
+                <div class="footer-section">
                     <h3>Contact Us</h3>
-                    <p><i class="fas fa-phone"></i> <a href="tel:+919429912689">+91 94299 12689</a></p>
-                    <p><i class="fas fa-phone"></i> <a href="tel:+919429912489">+91 94299 12489</a></p>
-                    <p><i class="fas fa-map-marker-alt"></i> Matrubhumi Vandana Trust-Morbi, Shop No.57, Capital Market, Beside ICICI Bank, Rawapar Chowk, Morbi.</p>
+                    <a href="tel:+919429912689" class="contact-link">+91 94299 12689</a>
+                    <a href="tel:+919429912489" class="contact-link">+91 94299 12489</a>
+                    <p>Address: Matrubhumi Vandana Trust-Morbi, Shop No.57, Capital Market, Beside ICICI Bank, Rawapar Chowk, Morbi.</p>
                 </div>
-                <div class="footer-social">
-                    <h3>Follow Us</h3>
-                    <a href="https://www.instagram.com/matrubhumi_official/?hl=en" target="_blank"><i class="fab fa-instagram"></i> Instagram</a>
-                    <a href="https://www.facebook.com/profile.php?id=61558235197338" target="_blank"><i class="fab fa-facebook"></i> Facebook</a>
+                <div class="footer-section">
+                    <h3>Our Social Accounts</h3>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/matrubhumi_official/?hl=en" class="social-link" target="_blank">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://www.facebook.com/profile.php?id=61558235197338" class="social-link" target="_blank">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Matrubhumi Vandana Trust. All rights reserved.</p>
+                <p>&copy; 2025 Matrubhumi Vandana Trust. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
-
-    <script src="./js/script.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const eventDropdown = document.getElementById('eventDropdown');
+            const mediaTabs = document.querySelectorAll('.media-tab');
+            const mediaGrid = document.getElementById('mediaGrid');
+            const audioList = document.getElementById('audioList');
+            const previewMedia = document.getElementById('previewMedia');
+            const previewAudio = document.getElementById('previewAudio');
+            const currentAudioName = document.getElementById('currentAudioName');
+            const resetBtn = document.getElementById('resetBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            // Current selections
+            let currentEvent = 'janta-raja-2025';
+            let currentMediaTab = 'images';
+            let selectedMedia = null;
+            let selectedAudio = null;
+            
+            // Sample data - in a real app, this would come from server/database
+            const mediaData = {
+                'janta-raja-2025': {
+                    images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+                    videos: ['video1.mp4', 'video2.mp4']
+                },
+                'bharat-mata-mandir': {
+                    images: ['temple1.jpg', 'temple2.jpg'],
+                    videos: ['construction.mp4']
+                }
+            };
+            
+            const audioData = {
+                'janta-raja-2025': ['bhajan1.mp3', 'bhajan2.mp3', 'speech.mp3'],
+                'bharat-mata-mandir': ['aarti.mp3', 'chanting.mp3']
+            };
+            
+            // Initialize the app
+            function init() {
+                loadMedia();
+                loadAudio();
+                setupEventListeners();
+                setDefaultSelections();
+            }
+            
+            // Set default selections
+            function setDefaultSelections() {
+                // Set first image as default
+                if (mediaData[currentEvent].images.length > 0) {
+                    selectMedia(mediaData[currentEvent].images[0], 'images');
+                }
+                
+                // Set first audio as default
+                if (audioData[currentEvent].length > 0) {
+                    selectAudio(audioData[currentEvent][0]);
+                }
+            }
+            
+            // Load media for current event
+            function loadMedia() {
+                mediaGrid.innerHTML = '';
+                const mediaItems = mediaData[currentEvent][currentMediaTab];
+                
+                mediaItems.forEach(item => {
+                    const mediaItem = document.createElement('div');
+                    mediaItem.className = 'media-item';
+                    mediaItem.dataset.name = item;
+                    
+                    if (currentMediaTab === 'images') {
+                        mediaItem.innerHTML = `
+                            <img src="media/${currentEvent}/images/${item}" alt="${item}">
+                            <div class="media-type-icon"><i class="fas fa-image"></i></div>
+                        `;
+                    } else {
+                        mediaItem.innerHTML = `
+                            <video>
+                                <source src="media/${currentEvent}/videos/${item}" type="video/mp4">
+                            </video>
+                            <div class="media-type-icon"><i class="fas fa-video"></i></div>
+                        `;
+                    }
+                    
+                    mediaItem.addEventListener('click', () => {
+                        selectMedia(item, currentMediaTab);
+                    });
+                    
+                    mediaGrid.appendChild(mediaItem);
+                });
+            }
+            
+            // Load audio for current event
+            function loadAudio() {
+                audioList.innerHTML = '';
+                const audioItems = audioData[currentEvent];
+                
+                audioItems.forEach(item => {
+                    const audioItem = document.createElement('div');
+                    audioItem.className = 'audio-item';
+                    audioItem.dataset.name = item;
+                    
+                    audioItem.innerHTML = `
+                        <i class="fas fa-music"></i>
+                        <div class="audio-name">${item}</div>
+                        <div class="play-btn"><i class="fas fa-play"></i></div>
+                    `;
+                    
+                    audioItem.addEventListener('click', () => {
+                        selectAudio(item);
+                    });
+                    
+                    // Play button functionality
+                    const playBtn = audioItem.querySelector('.play-btn');
+                    playBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        playAudioSample(item);
+                    });
+                    
+                    audioList.appendChild(audioItem);
+                });
+            }
+            
+            // Select media item
+            function selectMedia(mediaName, mediaType) {
+                selectedMedia = {
+                    name: mediaName,
+                    type: mediaType
+                };
+                
+                // Update UI
+                document.querySelectorAll('.media-item').forEach(item => {
+                    item.classList.remove('selected');
+                    if (item.dataset.name === mediaName) {
+                        item.classList.add('selected');
+                    }
+                });
+                
+                // Update preview
+                if (mediaType === 'images') {
+                    previewMedia.src = `media/${currentEvent}/images/${mediaName}`;
+                    previewMedia.style.display = 'block';
+                    // Hide video element if it exists
+                    const videoElement = document.querySelector('.preview-container video');
+                    if (videoElement) videoElement.style.display = 'none';
+                } else {
+                    previewMedia.style.display = 'none';
+                    let videoElement = document.querySelector('.preview-container video');
+                    if (!videoElement) {
+                        videoElement = document.createElement('video');
+                        videoElement.className = 'preview-media';
+                        videoElement.controls = false;
+                        videoElement.autoplay = true;
+                        videoElement.loop = true;
+                        document.querySelector('.preview-container').prepend(videoElement);
+                    } else {
+                        videoElement.style.display = 'block';
+                    }
+                    videoElement.src = `media/${currentEvent}/videos/${mediaName}`;
+                }
+            }
+            
+            // Select audio item
+            function selectAudio(audioName) {
+                selectedAudio = audioName;
+                
+                // Update UI
+                document.querySelectorAll('.audio-item').forEach(item => {
+                    item.classList.remove('selected');
+                    if (item.dataset.name === audioName) {
+                        item.classList.add('selected');
+                    }
+                });
+                
+                // Update preview
+                currentAudioName.textContent = audioName;
+                previewAudio.src = `media/${currentEvent}/audio/${audioName}`;
+            }
+            
+            // Play audio sample
+            function playAudioSample(audioName) {
+                const audio = new Audio(`media/${currentEvent}/audio/${audioName}`);
+                audio.play();
+            }
+            
+            // Setup event listeners
+            function setupEventListeners() {
+                // Event dropdown change
+                eventDropdown.addEventListener('change', () => {
+                    currentEvent = eventDropdown.value;
+                    loadMedia();
+                    loadAudio();
+                    setDefaultSelections();
+                });
+                
+                // Media tabs click
+                mediaTabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        mediaTabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        currentMediaTab = tab.dataset.tab;
+                        loadMedia();
+                    });
+                });
+                
+                // Reset button
+                resetBtn.addEventListener('click', () => {
+                    setDefaultSelections();
+                });
+                
+                // Download button
+                downloadBtn.addEventListener('click', () => {
+                    if (!selectedMedia || !selectedAudio) {
+                        alert('Please select both media and audio');
+                        return;
+                    }
+                    
+                    // In a real app, this would create and download the combined status
+                    alert('Status downloaded successfully!');
+                });
+            }
+            
+            // Initialize the app
+            init();
+        });
+    </script>
 </body>
 </html>
