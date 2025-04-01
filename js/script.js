@@ -5,14 +5,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const audioList = document.getElementById('audio-list');
     const previewMedia = document.getElementById('preview-media');
     const playBtn = document.getElementById('play-btn');
+    const downloadBtn = document.getElementById('download-btn');
     
     // State
     let selectedEvent = null;
     let selectedMedia = null;
     let selectedAudio = null;
     let mediaPlayer = null;
-    
-    // Sample media data (replace with actual API calls in production)
+    let audioPlayer = null;
+    let audioDuration = 0;
+
+    // Sample media data
     const mediaData = {
         'janta-raja-2025': {
             images: [
@@ -24,8 +27,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 { id: 2, src: './assets/janta-raja-2025/videos/video2.mp4', thumbnail: './assets/janta-raja-2025/videos/thumb2.jpg' }
             ],
             audio: [
-                { id: 1, src: './assets/janta-raja-2025/audio/audio1.mp3', title: 'Devotional Song 1', duration: '60s' },
-                { id: 2, src: './assets/janta-raja-2025/audio/audio2.mp3', title: 'Devotional Song 2', duration: '60s' }
+                { id: 1, src: './assets/janta-raja-2025/audio/audio1.mp3', title: 'Devotional Song 1' },
+                { id: 2, src: './assets/janta-raja-2025/audio/audio2.mp3', title: 'Devotional Song 2' }
             ]
         },
         'bharat-mata-mandir': {
@@ -34,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
             audio: []
         }
     };
-    
+
     // Event Selection
     eventSelector.addEventListener('change', function() {
         selectedEvent = this.value;
@@ -42,38 +45,30 @@ document.addEventListener('DOMContentLoaded', function() {
         loadAudioForEvent(selectedEvent);
         resetPreview();
     });
-    
+
     // Load Media
     function loadMediaForEvent(event) {
         mediaGrid.innerHTML = '';
         
         if (!mediaData[event]) return;
         
-        // Show loading state
-        mediaGrid.innerHTML = '<div class="loading-placeholder">Loading media...</div>';
+        // Add images
+        mediaData[event].images.forEach(img => {
+            const mediaItem = createMediaElement('image', img.src, img.id);
+            mediaGrid.appendChild(mediaItem);
+        });
         
-        // Simulate loading delay
-        setTimeout(() => {
-            mediaGrid.innerHTML = '';
-            
-            // Add images
-            mediaData[event].images.forEach(img => {
-                const mediaItem = createMediaElement('image', img.src, img.id);
-                mediaGrid.appendChild(mediaItem);
-            });
-            
-            // Add videos
-            mediaData[event].videos.forEach(video => {
-                const mediaItem = createMediaElement('video', video.thumbnail || video.src, video.id, video.src);
-                mediaGrid.appendChild(mediaItem);
-            });
-            
-            if (mediaData[event].images.length + mediaData[event].videos.length === 0) {
-                mediaGrid.innerHTML = '<div class="no-media">No media available for this event</div>';
-            }
-        }, 800);
+        // Add videos
+        mediaData[event].videos.forEach(video => {
+            const mediaItem = createMediaElement('video', video.thumbnail || video.src, video.id, video.src);
+            mediaGrid.appendChild(mediaItem);
+        });
+        
+        if (mediaData[event].images.length + mediaData[event].videos.length === 0) {
+            mediaGrid.innerHTML = '<div class="no-media">No media available for this event</div>';
+        }
     }
-    
+
     // Create media element
     function createMediaElement(type, src, id, videoSrc = null) {
         const mediaItem = document.createElement('div');
@@ -100,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return mediaItem;
     }
-    
+
     // Select media
     function selectMedia(element) {
         document.querySelectorAll('.media-item').forEach(item => {
@@ -115,48 +110,54 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         updatePreview();
     }
-    
+
     // Load Audio
     function loadAudioForEvent(event) {
         audioList.innerHTML = '';
         
         if (!mediaData[event]) return;
         
-        // Show loading state
-        audioList.innerHTML = '<div class="loading-placeholder">Loading audio...</div>';
-        
-        // Simulate loading delay
-        setTimeout(() => {
-            audioList.innerHTML = '';
+        mediaData[event].audio.forEach(audio => {
+            const audioItem = document.createElement('div');
+            audioItem.className = 'audio-item';
+            audioItem.dataset.src = audio.src;
+            audioItem.dataset.id = audio.id;
             
-            mediaData[event].audio.forEach(audio => {
-                const audioItem = document.createElement('div');
-                audioItem.className = 'audio-item';
-                audioItem.dataset.src = audio.src;
-                audioItem.dataset.id = audio.id;
-                
-                audioItem.innerHTML = `
-                    <i class="fas fa-music"></i>
-                    <div class="audio-info">
-                        <h4>${audio.title}</h4>
-                        <p>${audio.duration}</p>
-                    </div>
-                    <i class="fas fa-check"></i>
-                `;
-                
-                audioItem.addEventListener('click', function() {
-                    selectAudio(this);
-                });
-                
-                audioList.appendChild(audioItem);
+            // Create temporary audio element to get duration
+            const tempAudio = new Audio(audio.src);
+            tempAudio.addEventListener('loadedmetadata', function() {
+                const duration = formatDuration(tempAudio.duration);
+                audioItem.querySelector('.audio-info p').textContent = duration;
             });
             
-            if (mediaData[event].audio.length === 0) {
-                audioList.innerHTML = '<div class="no-audio">No audio available for this event</div>';
-            }
-        }, 800);
+            audioItem.innerHTML = `
+                <i class="fas fa-music"></i>
+                <div class="audio-info">
+                    <h4>${audio.title}</h4>
+                    <p>Loading duration...</p>
+                </div>
+                <i class="fas fa-check"></i>
+            `;
+            
+            audioItem.addEventListener('click', function() {
+                selectAudio(this);
+            });
+            
+            audioList.appendChild(audioItem);
+        });
+        
+        if (mediaData[event].audio.length === 0) {
+            audioList.innerHTML = '<div class="no-audio">No audio available for this event</div>';
+        }
     }
-    
+
+    // Format duration (seconds to MM:SS)
+    function formatDuration(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
     // Select audio
     function selectAudio(element) {
         document.querySelectorAll('.audio-item').forEach(item => {
@@ -165,12 +166,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         element.classList.add('selected');
         selectedAudio = element.dataset.src;
-        updatePreview();
+        
+        // Get audio duration
+        if (audioPlayer) {
+            audioPlayer.pause();
+            audioPlayer = null;
+        }
+        
+        audioPlayer = new Audio(selectedAudio);
+        audioPlayer.addEventListener('loadedmetadata', function() {
+            audioDuration = audioPlayer.duration;
+            updatePreview();
+        });
     }
-    
+
     // Update Preview
     function updatePreview() {
-        // Clear previous preview
         previewMedia.innerHTML = '';
         
         if (mediaPlayer) {
@@ -184,8 +195,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 mediaPlayer.src = selectedMedia.src;
                 mediaPlayer.controls = false;
                 mediaPlayer.muted = true;
-                mediaPlayer.loop = true;
                 previewMedia.appendChild(mediaPlayer);
+                
+                // Set video duration to match audio
+                if (audioDuration > 0) {
+                    mediaPlayer.addEventListener('loadedmetadata', function() {
+                        if (mediaPlayer.duration < audioDuration) {
+                            // Loop video if shorter than audio
+                            mediaPlayer.loop = true;
+                        }
+                    });
+                }
             } else {
                 const img = document.createElement('img');
                 img.src = selectedMedia.src;
@@ -201,17 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
     }
-    
-    // Reset Preview
-    function resetPreview() {
-        selectedMedia = null;
-        selectedAudio = null;
-        document.querySelectorAll('.media-item, .audio-item').forEach(item => {
-            item.classList.remove('selected');
-        });
-        updatePreview();
-    }
-    
+
     // Play Button
     playBtn.addEventListener('click', function() {
         if (!selectedMedia) {
@@ -219,21 +229,62 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        if (!selectedAudio) {
+            alert('Please select audio first');
+            return;
+        }
+        
         if (selectedMedia.type === 'video' && mediaPlayer) {
             if (mediaPlayer.paused) {
                 mediaPlayer.play();
+                audioPlayer.play();
                 playBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                
+                // Stop after audio duration
+                setTimeout(() => {
+                    mediaPlayer.pause();
+                    audioPlayer.pause();
+                    mediaPlayer.currentTime = 0;
+                    audioPlayer.currentTime = 0;
+                    playBtn.innerHTML = '<i class="fas fa-play"></i> Play Status';
+                }, audioDuration * 1000);
             } else {
                 mediaPlayer.pause();
+                audioPlayer.pause();
                 playBtn.innerHTML = '<i class="fas fa-play"></i> Play Status';
             }
-        } else {
-            // For images, show fullscreen preview
-            alert('Playing the selected media with audio');
+        } else if (selectedMedia.type === 'image') {
+            // For images, show slideshow for audio duration
+            playBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+            audioPlayer.play();
+            
+            setTimeout(() => {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+                playBtn.innerHTML = '<i class="fas fa-play"></i> Play Status';
+            }, audioDuration * 1000);
         }
     });
-    
-    // Initialize
-    loadMediaForEvent('janta-raja-2025');
-    loadAudioForEvent('janta-raja-2025');
+
+    // Download Button
+    downloadBtn.addEventListener('click', function() {
+        if (!selectedMedia || !selectedAudio) {
+            alert('Please select both media and audio first');
+            return;
+        }
+        
+        alert(`Preparing download with:\nMedia: ${selectedMedia.src}\nAudio: ${selectedAudio}\nDuration: ${formatDuration(audioDuration)}`);
+        // In real implementation, you would combine media and audio here
+    });
+
+    // Reset Preview
+    function resetPreview() {
+        selectedMedia = null;
+        selectedAudio = null;
+        audioDuration = 0;
+        document.querySelectorAll('.media-item, .audio-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        updatePreview();
+    }
 });
