@@ -1,4 +1,11 @@
-/* Base Styles */
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 :root {
     --primary-color: #25D366;
     --secondary-color: #128C7E;
@@ -7,13 +14,6 @@
     --light-text: #f8f8f8;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
@@ -61,6 +61,7 @@ body {
 .logo h1 {
     font-size: 1.5rem;
     font-weight: 600;
+    color: white;
 }
 
 .event-dropdown {
@@ -93,7 +94,7 @@ body {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.media-selection h2, .audio-selection h2, .preview-section h2 {
+h2 {
     color: var(--accent-color);
     margin-bottom: 20px;
     display: flex;
@@ -115,6 +116,7 @@ body {
     aspect-ratio: 9/16;
     transition: var(--transition);
     box-shadow: var(--shadow);
+    background-color: #eee;
 }
 
 .media-item:hover {
@@ -206,6 +208,9 @@ body {
     overflow: hidden;
     position: relative;
     box-shadow: var(--shadow);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .preview-media .placeholder {
@@ -213,8 +218,9 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
     color: #999;
+    text-align: center;
+    padding: 20px;
 }
 
 .preview-media .placeholder i {
@@ -235,7 +241,7 @@ body {
     justify-content: center;
 }
 
-.play-btn, .download-btn, .share-btn {
+button {
     padding: 12px 25px;
     border: none;
     border-radius: 25px;
@@ -263,7 +269,7 @@ body {
     color: white;
 }
 
-.play-btn:hover, .download-btn:hover, .share-btn:hover {
+button:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
@@ -340,7 +346,7 @@ body {
         width: 100%;
     }
     
-    .play-btn, .download-btn, .share-btn {
+    button {
         width: 100%;
         justify-content: center;
     }
@@ -364,7 +370,7 @@ body {
     animation-delay: 0.4s;
 }
 
-/* Loading Animation */
+/* Loading State */
 .loading {
     position: relative;
     overflow: hidden;
