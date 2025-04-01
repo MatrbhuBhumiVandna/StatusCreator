@@ -13,35 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedMedia = null;
     let selectedAudio = null;
     let mediaPlayer = null;
-    let audioPlayer = null;
     let currentlyPlayingAudio = null;
-
-    // Initialize with sample data
-    const mediaData = {
-        'janta-raja-2025': {
-            images: [
-                { filename: 'janmastami-celebration.jpg', displayName: 'Janmastami Celebration' },
-                { filename: 'procession.jpg', displayName: 'Grand Procession' }
-            ],
-            videos: [
-                { filename: 'cultural-performance.mp4', displayName: 'Cultural Performance', thumbnail: 'cultural-thumb.jpg' },
-                { filename: 'aarti-ceremony.mp4', displayName: 'Aarti Ceremony', thumbnail: 'aarti-thumb.jpg' }
-            ],
-            audio: [
-                { filename: 'bhajan-jai-shri-ram.mp3', displayName: 'Bhajan: Jai Shri Ram' },
-                { filename: 'aarti-om-jai-jagdish.mp3', displayName: 'Aarti: Om Jai Jagdish' },
-                { filename: 'speech-by-priest.mp3', displayName: 'Speech by Head Priest' }
-            ]
-        },
-        'bharat-mata-mandir': {
-            images: [
-                { filename: 'temple-construction.jpg', displayName: 'Temple Construction' },
-                { filename: 'foundation-ceremony.jpg', displayName: 'Foundation Ceremony' }
-            ],
-            videos: [],
-            audio: []
-        }
-    };
 
     // Event Selection
     eventSelector.addEventListener('change', function() {
@@ -51,57 +23,57 @@ document.addEventListener('DOMContentLoaded', function() {
         resetPreview();
     });
 
-    // Load Media for Selected Event
+    // Load Media from directory structure
     function loadMediaForEvent(event) {
-        mediaGrid.innerHTML = '';
+        mediaGrid.innerHTML = '<div class="loading-placeholder">Loading media...</div>';
         
-        if (!mediaData[event] || (mediaData[event].images.length === 0 && mediaData[event].videos.length === 0)) {
-            mediaGrid.innerHTML = '<div class="no-media">No media available for this event</div>';
-            return;
-        }
-
-        // Load images
-        mediaData[event].images.forEach(image => {
-            const mediaItem = createMediaElement(
-                'image',
-                `./assets/${event}/images/${image.filename}`,
-                image.filename,
-                image.displayName
-            );
-            mediaGrid.appendChild(mediaItem);
-        });
-
-        // Load videos
-        mediaData[event].videos.forEach(video => {
-            const mediaItem = createMediaElement(
-                'video',
-                `./assets/${event}/videos/${video.thumbnail || video.filename}`,
-                video.filename,
-                video.displayName,
-                `./assets/${event}/videos/${video.filename}`
-            );
-            mediaGrid.appendChild(mediaItem);
-        });
+        // In production: Fetch from server API or directory scan
+        // For demo, we simulate loading
+        setTimeout(() => {
+            mediaGrid.innerHTML = `
+                <div class="no-media">
+                    Media files should appear here from your ${event}/images/ and ${event}/videos/ folders
+                </div>
+            `;
+        }, 800);
     }
 
-    // Create Media Element
-    function createMediaElement(type, src, id, displayName, videoSrc = null) {
+    // Load Audio from directory structure
+    function loadAudioForEvent(event) {
+        audioList.innerHTML = '<div class="loading-placeholder">Loading audio tracks...</div>';
+        
+        // In production: Fetch from server API or directory scan
+        // For demo, we simulate loading
+        setTimeout(() => {
+            audioList.innerHTML = `
+                <div class="no-audio">
+                    Audio files should appear here from your ${event}/audio/ folder
+                </div>
+            `;
+        }, 800);
+    }
+
+    // Create media element (for actual implementation)
+    function createMediaElement(type, filePath, fileName) {
         const mediaItem = document.createElement('div');
         mediaItem.className = 'media-item';
         mediaItem.dataset.type = type;
-        mediaItem.dataset.id = id;
-        mediaItem.dataset.src = type === 'video' ? videoSrc : src;
-        mediaItem.dataset.displayName = displayName;
-
+        mediaItem.dataset.src = filePath;
+        
+        // Extract display name from filename (remove extension and dashes)
+        const displayName = fileName.replace(/\.[^/.]+$/, "").replace(/-/g, " ");
+        
         if (type === 'video') {
             mediaItem.innerHTML = `
-                <img src="${src}" alt="${displayName}">
+                <video muted loop>
+                    <source src="${filePath}" type="video/mp4">
+                </video>
                 <div class="media-icon"><i class="fas fa-play"></i></div>
                 <div class="media-name">${displayName}</div>
             `;
         } else {
             mediaItem.innerHTML = `
-                <img src="${src}" alt="${displayName}">
+                <img src="${filePath}" alt="${displayName}">
                 <div class="media-icon"><i class="fas fa-image"></i></div>
                 <div class="media-name">${displayName}</div>
             `;
@@ -124,69 +96,47 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedMedia = {
             type: element.dataset.type,
             src: element.dataset.src,
-            id: element.dataset.id,
-            name: element.dataset.displayName
+            name: element.querySelector('.media-name').textContent
         };
         updatePreview();
     }
 
-    // Load Audio for Selected Event
-    function loadAudioForEvent(event) {
-        audioList.innerHTML = '';
-        
-        if (!mediaData[event] || mediaData[event].audio.length === 0) {
-            audioList.innerHTML = '<div class="no-audio">No audio available for this event</div>';
-            return;
-        }
-
-        mediaData[event].audio.forEach(audio => {
-            const audioItem = createAudioElement(
-                `./assets/${event}/audio/${audio.filename}`,
-                audio.filename,
-                audio.displayName
-            );
-            audioList.appendChild(audioItem);
-        });
-    }
-
-    // Create Audio Element with Play Button
-    function createAudioElement(src, id, displayName) {
+    // Create audio element (for actual implementation)
+    function createAudioElement(filePath, fileName) {
         const audioItem = document.createElement('div');
         audioItem.className = 'audio-item';
-        audioItem.dataset.src = src;
-        audioItem.dataset.id = id;
-        audioItem.dataset.displayName = displayName;
-
+        audioItem.dataset.src = filePath;
+        
+        // Extract display name from filename
+        const displayName = fileName.replace(/\.[^/.]+$/, "").replace(/-/g, " ");
+        
         audioItem.innerHTML = `
             <div class="audio-play-btn">
                 <i class="fas fa-play"></i>
             </div>
             <div class="audio-info">
                 <h4>${displayName}</h4>
-                <p class="audio-duration">Loading...</p>
+                <p class="audio-duration">0:00</p>
             </div>
             <div class="audio-select-check">
                 <i class="fas fa-check"></i>
             </div>
         `;
 
-        // Set up audio element for preview
-        const audioElement = new Audio(src);
+        // Audio preview functionality
+        const audioElement = new Audio(filePath);
         const playBtn = audioItem.querySelector('.audio-play-btn');
         const durationElement = audioItem.querySelector('.audio-duration');
 
-        // Load duration when metadata is available
         audioElement.addEventListener('loadedmetadata', function() {
             durationElement.textContent = formatDuration(audioElement.duration);
         });
 
-        // Play/Pause functionality
         playBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             toggleAudioPreview(audioItem, audioElement, playBtn.querySelector('i'));
         });
 
-        // Select audio track
         audioItem.addEventListener('click', function() {
             selectAudio(this);
         });
@@ -196,30 +146,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toggle Audio Preview
     function toggleAudioPreview(audioItem, audioElement, playIcon) {
-        // Stop any currently playing audio
         if (currentlyPlayingAudio && currentlyPlayingAudio.audioElement !== audioElement) {
             currentlyPlayingAudio.audioElement.pause();
             currentlyPlayingAudio.audioElement.currentTime = 0;
-            currentlyPlayingAudio.playIcon.classList.remove('fa-pause');
-            currentlyPlayingAudio.playIcon.classList.add('fa-play');
+            currentlyPlayingAudio.playIcon.classList.replace('fa-pause', 'fa-play');
         }
 
         if (audioElement.paused) {
             audioElement.play();
-            playIcon.classList.remove('fa-play');
-            playIcon.classList.add('fa-pause');
+            playIcon.classList.replace('fa-play', 'fa-pause');
             currentlyPlayingAudio = { audioElement, playIcon };
             
             audioElement.addEventListener('ended', function() {
-                playIcon.classList.remove('fa-pause');
-                playIcon.classList.add('fa-play');
+                playIcon.classList.replace('fa-pause', 'fa-play');
                 currentlyPlayingAudio = null;
             });
         } else {
             audioElement.pause();
             audioElement.currentTime = 0;
-            playIcon.classList.remove('fa-pause');
-            playIcon.classList.add('fa-play');
+            playIcon.classList.replace('fa-pause', 'fa-play');
             currentlyPlayingAudio = null;
         }
     }
@@ -233,14 +178,13 @@ document.addEventListener('DOMContentLoaded', function() {
         element.classList.add('selected');
         selectedAudio = {
             src: element.dataset.src,
-            id: element.dataset.id,
-            name: element.dataset.displayName,
+            name: element.querySelector('h4').textContent,
             duration: element.querySelector('.audio-duration').textContent
         };
         updatePreview();
     }
 
-    // Format Duration (seconds to MM:SS)
+    // Format Duration
     function formatDuration(seconds) {
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
@@ -251,10 +195,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePreview() {
         previewMedia.innerHTML = '';
         
-        // Clear any existing players
         if (mediaPlayer) {
             mediaPlayer.pause();
-            mediaPlayer.remove();
             mediaPlayer = null;
         }
 
@@ -268,11 +210,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Create preview container
         const previewContainer = document.createElement('div');
         previewContainer.className = 'preview-content';
 
-        // Add media (image or video)
         if (selectedMedia.type === 'video') {
             mediaPlayer = document.createElement('video');
             mediaPlayer.src = selectedMedia.src;
@@ -307,97 +247,35 @@ document.addEventListener('DOMContentLoaded', function() {
         previewMedia.appendChild(previewContainer);
     }
 
-    // Play Button - Combine Media and Audio
+    // Play Combined Media
     playBtn.addEventListener('click', function() {
-        if (!selectedMedia) {
-            alert('Please select media first');
-            return;
-        }
-        
-        if (!selectedAudio) {
-            alert('Please select audio first');
+        if (!selectedMedia || !selectedAudio) {
+            alert('Please select both media and audio first');
             return;
         }
 
-        // Stop any currently playing previews
-        if (currentlyPlayingAudio) {
-            currentlyPlayingAudio.audioElement.pause();
-            currentlyPlayingAudio.audioElement.currentTime = 0;
-            currentlyPlayingAudio.playIcon.classList.remove('fa-pause');
-            currentlyPlayingAudio.playIcon.classList.add('fa-play');
-            currentlyPlayingAudio = null;
-        }
-
-        // Create new audio player for the selected audio
-        audioPlayer = new Audio(selectedAudio.src);
-
-        if (selectedMedia.type === 'video' && mediaPlayer) {
-            if (mediaPlayer.paused) {
-                // Play video with audio
-                mediaPlayer.play();
-                audioPlayer.play();
-                playBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
-                
-                // When audio ends, stop both
-                audioPlayer.addEventListener('ended', function() {
-                    mediaPlayer.pause();
-                    mediaPlayer.currentTime = 0;
-                    playBtn.innerHTML = '<i class="fas fa-play"></i> Play Status';
-                });
-            } else {
-                // Pause both
-                mediaPlayer.pause();
-                mediaPlayer.currentTime = 0;
-                audioPlayer.pause();
-                playBtn.innerHTML = '<i class="fas fa-play"></i> Play Status';
-            }
-        } else if (selectedMedia.type === 'image') {
-            // For images, play audio only
-            if (audioPlayer.paused) {
-                audioPlayer.play();
-                playBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
-                
-                audioPlayer.addEventListener('ended', function() {
-                    playBtn.innerHTML = '<i class="fas fa-play"></i> Play Status';
-                });
-            } else {
-                audioPlayer.pause();
-                audioPlayer.currentTime = 0;
-                playBtn.innerHTML = '<i class="fas fa-play"></i> Play Status';
-            }
-        }
+        // Implementation note: 
+        // In production, you would combine the media and audio here
+        // This is just the UI implementation
+        alert(`Would play:\nMedia: ${selectedMedia.name}\nAudio: ${selectedAudio.name}\nDuration: ${selectedAudio.duration}`);
     });
 
-    // Download Button
+    // Download Combined Status
     downloadBtn.addEventListener('click', function() {
         if (!selectedMedia || !selectedAudio) {
             alert('Please select both media and audio first');
             return;
         }
-        
-        // In a real implementation, this would combine the media and audio
-        alert(`Preparing download with:
-Media: ${selectedMedia.name}
-Audio: ${selectedAudio.name}
-Duration: ${selectedAudio.duration}`);
-        
-        // For actual implementation, you would need to:
-        // 1. Combine the video/image with audio server-side
-        // 2. Provide the download link
+        alert(`Would download combined status with:\nMedia: ${selectedMedia.name}\nAudio: ${selectedAudio.name}`);
     });
 
-    // Share Button
+    // Share Status
     shareBtn.addEventListener('click', function() {
         if (!selectedMedia || !selectedAudio) {
             alert('Please select both media and audio first');
             return;
         }
-        
-        // Basic implementation - would use Web Share API in production
-        alert(`Sharing status:
-Media: ${selectedMedia.name}
-Audio: ${selectedAudio.name}
-Duration: ${selectedAudio.duration}`);
+        alert(`Would share:\nMedia: ${selectedMedia.name}\nAudio: ${selectedAudio.name}`);
     });
 
     // Reset Preview
@@ -405,12 +283,10 @@ Duration: ${selectedAudio.duration}`);
         selectedMedia = null;
         selectedAudio = null;
         
-        // Stop any playing audio previews
         if (currentlyPlayingAudio) {
             currentlyPlayingAudio.audioElement.pause();
             currentlyPlayingAudio.audioElement.currentTime = 0;
-            currentlyPlayingAudio.playIcon.classList.remove('fa-pause');
-            currentlyPlayingAudio.playIcon.classList.add('fa-play');
+            currentlyPlayingAudio.playIcon.classList.replace('fa-pause', 'fa-play');
             currentlyPlayingAudio = null;
         }
         
@@ -420,8 +296,4 @@ Duration: ${selectedAudio.duration}`);
         
         updatePreview();
     }
-
-    // Initialize with first event
-    loadMediaForEvent('janta-raja-2025');
-    loadAudioForEvent('janta-raja-2025');
 });
