@@ -5,13 +5,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const audioList = document.getElementById('audio-list');
     const previewMedia = document.getElementById('preview-media');
     const playBtn = document.getElementById('play-btn');
-    const downloadBtn = document.getElementById('download-btn');
-    const shareBtn = document.getElementById('share-btn');
     
     // State
     let selectedEvent = null;
     let selectedMedia = null;
     let selectedAudio = null;
+    let mediaPlayer = null;
+    
+    // Sample media data (replace with actual API calls in production)
+    const mediaData = {
+        'janta-raja-2025': {
+            images: [
+                { id: 1, src: './assets/janta-raja-2025/images/image1.jpg' },
+                { id: 2, src: './assets/janta-raja-2025/images/image2.jpg' }
+            ],
+            videos: [
+                { id: 1, src: './assets/janta-raja-2025/videos/video1.mp4', thumbnail: './assets/janta-raja-2025/videos/thumb1.jpg' },
+                { id: 2, src: './assets/janta-raja-2025/videos/video2.mp4', thumbnail: './assets/janta-raja-2025/videos/thumb2.jpg' }
+            ],
+            audio: [
+                { id: 1, src: './assets/janta-raja-2025/audio/audio1.mp3', title: 'Devotional Song 1', duration: '60s' },
+                { id: 2, src: './assets/janta-raja-2025/audio/audio2.mp3', title: 'Devotional Song 2', duration: '60s' }
+            ]
+        },
+        'bharat-mata-mandir': {
+            images: [],
+            videos: [],
+            audio: []
+        }
+    };
     
     // Event Selection
     eventSelector.addEventListener('change', function() {
@@ -21,146 +43,153 @@ document.addEventListener('DOMContentLoaded', function() {
         resetPreview();
     });
     
-    // Load Media for Selected Event
+    // Load Media
     function loadMediaForEvent(event) {
-        // In a real app, this would fetch from server based on event
-        // For demo, we'll use placeholder data
         mediaGrid.innerHTML = '';
         
-        // Simulate loading
-        for (let i = 0; i < 6; i++) {
-            const mediaItem = document.createElement('div');
-            mediaItem.className = 'media-item loading';
-            mediaGrid.appendChild(mediaItem);
-        }
+        if (!mediaData[event]) return;
         
-        // Simulate API delay
+        // Show loading state
+        mediaGrid.innerHTML = '<div class="loading-placeholder">Loading media...</div>';
+        
+        // Simulate loading delay
         setTimeout(() => {
             mediaGrid.innerHTML = '';
             
-            // Add sample images (2) and videos (4) - in real app these would come from your folders
-            for (let i = 1; i <= 6; i++) {
-                const isVideo = i % 2 === 0;
-                const mediaItem = document.createElement('div');
-                mediaItem.className = 'media-item';
-                mediaItem.dataset.type = isVideo ? 'video' : 'image';
-                mediaItem.dataset.src = isVideo ? 
-                    `assets/${event}/videos/video${i/2}.mp4` : 
-                    `assets/${event}/images/image${Math.ceil(i/2)}.jpg`;
-                
-                if (isVideo) {
-                    const video = document.createElement('video');
-                    video.src = `assets/${event}/videos/video${i/2}.mp4`;
-                    video.muted = true;
-                    video.loop = true;
-                    mediaItem.appendChild(video);
-                    
-                    const icon = document.createElement('div');
-                    icon.className = 'media-icon';
-                    icon.innerHTML = '<i class="fas fa-play"></i>';
-                    mediaItem.appendChild(icon);
-                } else {
-                    const img = document.createElement('img');
-                    img.src = `assets/${event}/images/image${Math.ceil(i/2)}.jpg`;
-                    img.alt = `Event Image ${Math.ceil(i/2)}`;
-                    mediaItem.appendChild(img);
-                    
-                    const icon = document.createElement('div');
-                    icon.className = 'media-icon';
-                    icon.innerHTML = '<i class="fas fa-image"></i>';
-                    mediaItem.appendChild(icon);
-                }
-                
-                mediaItem.addEventListener('click', function() {
-                    // Remove selected class from all
-                    document.querySelectorAll('.media-item').forEach(item => {
-                        item.classList.remove('selected');
-                    });
-                    
-                    // Add to clicked item
-                    this.classList.add('selected');
-                    selectedMedia = {
-                        type: this.dataset.type,
-                        src: this.dataset.src
-                    };
-                    updatePreview();
-                });
-                
+            // Add images
+            mediaData[event].images.forEach(img => {
+                const mediaItem = createMediaElement('image', img.src, img.id);
                 mediaGrid.appendChild(mediaItem);
+            });
+            
+            // Add videos
+            mediaData[event].videos.forEach(video => {
+                const mediaItem = createMediaElement('video', video.thumbnail || video.src, video.id, video.src);
+                mediaGrid.appendChild(mediaItem);
+            });
+            
+            if (mediaData[event].images.length + mediaData[event].videos.length === 0) {
+                mediaGrid.innerHTML = '<div class="no-media">No media available for this event</div>';
             }
-        }, 1000);
+        }, 800);
     }
     
-    // Load Audio for Selected Event
-    function loadAudioForEvent(event) {
-        // In a real app, this would fetch from server based on event
-        // For demo, we'll use placeholder data
-        audioList.innerHTML = '';
+    // Create media element
+    function createMediaElement(type, src, id, videoSrc = null) {
+        const mediaItem = document.createElement('div');
+        mediaItem.className = 'media-item';
+        mediaItem.dataset.type = type;
+        mediaItem.dataset.id = id;
+        mediaItem.dataset.src = type === 'video' ? videoSrc : src;
         
-        // Simulate loading
-        for (let i = 0; i < 3; i++) {
-            const audioItem = document.createElement('div');
-            audioItem.className = 'audio-item loading';
-            audioList.appendChild(audioItem);
+        if (type === 'video') {
+            mediaItem.innerHTML = `
+                <img src="${src}" alt="Video thumbnail">
+                <div class="media-icon"><i class="fas fa-play"></i></div>
+            `;
+        } else {
+            mediaItem.innerHTML = `
+                <img src="${src}" alt="Event image">
+                <div class="media-icon"><i class="fas fa-image"></i></div>
+            `;
         }
         
-        // Simulate API delay
+        mediaItem.addEventListener('click', function() {
+            selectMedia(this);
+        });
+        
+        return mediaItem;
+    }
+    
+    // Select media
+    function selectMedia(element) {
+        document.querySelectorAll('.media-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        element.classList.add('selected');
+        selectedMedia = {
+            type: element.dataset.type,
+            src: element.dataset.src,
+            id: element.dataset.id
+        };
+        updatePreview();
+    }
+    
+    // Load Audio
+    function loadAudioForEvent(event) {
+        audioList.innerHTML = '';
+        
+        if (!mediaData[event]) return;
+        
+        // Show loading state
+        audioList.innerHTML = '<div class="loading-placeholder">Loading audio...</div>';
+        
+        // Simulate loading delay
         setTimeout(() => {
             audioList.innerHTML = '';
             
-            // Add sample audio tracks - in real app these would come from your folders
-            for (let i = 1; i <= 3; i++) {
+            mediaData[event].audio.forEach(audio => {
                 const audioItem = document.createElement('div');
                 audioItem.className = 'audio-item';
-                audioItem.dataset.src = `assets/${event}/audio/audio${i}.mp3`;
+                audioItem.dataset.src = audio.src;
+                audioItem.dataset.id = audio.id;
                 
                 audioItem.innerHTML = `
                     <i class="fas fa-music"></i>
                     <div class="audio-info">
-                        <h4>Audio Track ${i}</h4>
-                        <p>60 seconds</p>
+                        <h4>${audio.title}</h4>
+                        <p>${audio.duration}</p>
                     </div>
                     <i class="fas fa-check"></i>
                 `;
                 
                 audioItem.addEventListener('click', function() {
-                    // Remove selected class from all
-                    document.querySelectorAll('.audio-item').forEach(item => {
-                        item.classList.remove('selected');
-                    });
-                    
-                    // Add to clicked item
-                    this.classList.add('selected');
-                    selectedAudio = this.dataset.src;
-                    updatePreview();
+                    selectAudio(this);
                 });
                 
                 audioList.appendChild(audioItem);
+            });
+            
+            if (mediaData[event].audio.length === 0) {
+                audioList.innerHTML = '<div class="no-audio">No audio available for this event</div>';
             }
-        }, 1000);
+        }, 800);
+    }
+    
+    // Select audio
+    function selectAudio(element) {
+        document.querySelectorAll('.audio-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        element.classList.add('selected');
+        selectedAudio = element.dataset.src;
+        updatePreview();
     }
     
     // Update Preview
     function updatePreview() {
+        // Clear previous preview
         previewMedia.innerHTML = '';
+        
+        if (mediaPlayer) {
+            mediaPlayer.pause();
+            mediaPlayer = null;
+        }
         
         if (selectedMedia) {
             if (selectedMedia.type === 'video') {
-                const video = document.createElement('video');
-                video.src = selectedMedia.src;
-                video.controls = false;
-                video.autoplay = false;
-                video.muted = false;
-                video.style.width = '100%';
-                video.style.height = '100%';
-                video.style.objectFit = 'cover';
-                previewMedia.appendChild(video);
+                mediaPlayer = document.createElement('video');
+                mediaPlayer.src = selectedMedia.src;
+                mediaPlayer.controls = false;
+                mediaPlayer.muted = true;
+                mediaPlayer.loop = true;
+                previewMedia.appendChild(mediaPlayer);
             } else {
                 const img = document.createElement('img');
                 img.src = selectedMedia.src;
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.objectFit = 'cover';
+                img.alt = 'Selected media';
                 previewMedia.appendChild(img);
             }
         } else {
@@ -186,45 +215,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Play Button
     playBtn.addEventListener('click', function() {
         if (!selectedMedia) {
-            alert('Please select a photo or video first');
+            alert('Please select media first');
             return;
         }
         
-        const mediaElement = previewMedia.querySelector('video, img');
-        
-        if (mediaElement && mediaElement.tagName === 'VIDEO') {
-            if (mediaElement.paused) {
-                mediaElement.play();
+        if (selectedMedia.type === 'video' && mediaPlayer) {
+            if (mediaPlayer.paused) {
+                mediaPlayer.play();
                 playBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
             } else {
-                mediaElement.pause();
+                mediaPlayer.pause();
                 playBtn.innerHTML = '<i class="fas fa-play"></i> Play Status';
             }
         } else {
-            // For images, we can't "play" but could animate or show fullscreen
-            alert('Playing the selected media');
+            // For images, show fullscreen preview
+            alert('Playing the selected media with audio');
         }
     });
     
-    // Download Button
-    downloadBtn.addEventListener('click', function() {
-        if (!selectedMedia) {
-            alert('Please select a photo or video first');
-            return;
-        }
-        
-        // In a real app, this would combine media and audio and trigger download
-        alert('Download functionality would combine the selected media and audio and download it');
-    });
-    
-    // Share Button
-    shareBtn.addEventListener('click', function() {
-        if (!selectedMedia) {
-            alert('Please select a photo or video first');
-            return;
-        }
-        
-        // In a real app, this would use the Web Share API or social media SDKs
-        alert('Share functionality would share the combined status to social media');
-    });
+    // Initialize
+    loadMediaForEvent('janta-raja-2025');
+    loadAudioForEvent('janta-raja-2025');
 });
