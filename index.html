@@ -448,6 +448,12 @@
         }
         
         /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         @media (max-width: 576px) {
             .navbar .container {
                 flex-direction: column;
@@ -683,7 +689,7 @@
                     const playBtn = audioItem.querySelector('.play-btn');
                     playBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        playAudioSample(item);
+                        toggleAudioPlayback(item);
                     });
                     
                     audioList.appendChild(audioItem);
@@ -744,12 +750,35 @@
                 // Update preview
                 currentAudioName.textContent = audioName;
                 previewAudio.src = `media/${currentEvent}/audio/${audioName}`;
+                
+                // Automatically play the audio when selected
+                previewAudio.play().catch(e => {
+                    console.log("Audio playback failed:", e);
+                    // This catch prevents errors when browsers block auto-play
+                });
+                
+                // Update play button icon to pause when playing
+                const playBtns = document.querySelectorAll('.play-btn i');
+                playBtns.forEach(btn => {
+                    if (btn.closest('.audio-item').dataset.name === audioName) {
+                        btn.classList.remove('fa-play');
+                        btn.classList.add('fa-pause');
+                    } else {
+                        btn.classList.remove('fa-pause');
+                        btn.classList.add('fa-play');
+                    }
+                });
             }
             
-            // Play audio sample
-            function playAudioSample(audioName) {
-                const audio = new Audio(`media/${currentEvent}/audio/${audioName}`);
-                audio.play();
+            // Toggle audio playback
+            function toggleAudioPlayback(audioName) {
+                if (selectedAudio === audioName && !previewAudio.paused) {
+                    previewAudio.pause();
+                    document.querySelector(`.audio-item[data-name="${audioName}"] .play-btn i`)
+                        .classList.replace('fa-pause', 'fa-play');
+                } else {
+                    selectAudio(audioName);
+                }
             }
             
             // Setup event listeners
@@ -786,6 +815,14 @@
                     
                     // In a real app, this would create and download the combined status
                     alert('Status downloaded successfully!');
+                });
+                
+                // Handle audio ending to reset play button
+                previewAudio.addEventListener('ended', () => {
+                    const playBtns = document.querySelectorAll('.play-btn i');
+                    playBtns.forEach(btn => {
+                        btn.classList.replace('fa-pause', 'fa-play');
+                    });
                 });
             }
             
